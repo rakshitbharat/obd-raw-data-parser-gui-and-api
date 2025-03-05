@@ -211,7 +211,7 @@ export default function Home() {
                       <span className="size-2 rounded-full bg-blue-500"></span>
                       Decode Diagnostic Trouble Codes (DTC)
                     </CardTitle>
-                    <CardDescription>Enter DTC data in array format and select the mode</CardDescription>
+                    <CardDescription>Enter DTC data as a JSON array of arrays of numbers</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={(e) => {
@@ -221,7 +221,31 @@ export default function Home() {
                       const data = formData.get('data') as string;
                       const mode = formData.get('mode') as string;
                       const isCan = formData.get('isCan') === 'true';
-                      handleSubmit('decodeDTC', data, mode, isCan);
+                      
+                      // Validate JSON before submitting
+                      try {
+                        const jsonData = JSON.parse(data);
+                        if (!Array.isArray(jsonData) || !jsonData.every(Array.isArray)) {
+                          setResults({
+                            status: 'error',
+                            error: 'Invalid format. Data must be an array of arrays.'
+                          });
+                          return;
+                        }
+                        if (!jsonData.every(arr => arr.every(num => typeof num === 'number'))) {
+                          setResults({
+                            status: 'error',
+                            error: 'Invalid format. All elements must be numbers.'
+                          });
+                          return;
+                        }
+                        handleSubmit('decodeDTC', data, mode, isCan);
+                      } catch (error) {
+                        setResults({
+                          status: 'error',
+                          error: 'Invalid JSON format. Please check your input.'
+                        });
+                      }
                     }} className="space-y-4">
                       <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
@@ -251,13 +275,30 @@ export default function Home() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="dtc-data">DTC Data (JSON array format)</Label>
+                        <Label htmlFor="dtc-data">
+                          DTC Data (JSON array format)
+                          <span className="text-sm text-muted-foreground ml-2">Must be a valid JSON array of arrays of numbers</span>
+                        </Label>
                         <textarea 
                           id="dtc-data" 
                           name="data" 
                           placeholder='[[52, 51, 48, 49, 48, 49, 48, 49, 49, 51, 13], [13, 62]]'
                           required 
-                          className="w-full h-32 p-2 font-mono border rounded-md resize-none bg-background" 
+                          className="w-full h-32 p-2 font-mono border rounded-md resize-none bg-background"
+                          onBlur={(e) => {
+                            try {
+                              const jsonData = JSON.parse(e.target.value);
+                              if (!Array.isArray(jsonData) || !jsonData.every(Array.isArray)) {
+                                e.target.setCustomValidity('Data must be an array of arrays');
+                              } else if (!jsonData.every(arr => arr.every(num => typeof num === 'number'))) {
+                                e.target.setCustomValidity('All elements must be numbers');
+                              } else {
+                                e.target.setCustomValidity('');
+                              }
+                            } catch (error) {
+                              e.target.setCustomValidity('Invalid JSON format');
+                            }
+                          }}
                         />
                       </div>
                       <Button type="submit" disabled={loading} className="w-full">
