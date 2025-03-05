@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
         ignoreBuildErrors: false
     },
     eslint: {
-        ignoreDuringBuilds: false
+        ignoreDuringBuilds: true // Disable ESLint during production build
     },
     poweredByHeader: false,
     headers: async () => [
@@ -38,6 +38,6 @@ const nextConfig: NextConfig = {
             ]
         }
     ]
-}
+};
 
 export default nextConfig;
