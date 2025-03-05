@@ -40,7 +40,7 @@
         "lucide-react": "^0.477.0",
         "next": "15.2.1",
         "next-themes": "^0.4.4",
-        "obd-raw-data-parser": "^1.0.8",
+        "obd-raw-data-parser": "github:rakshitbharat/obd-raw-data-parser",
         "react": "^19.0.0",
         "react-day-picker": "^8.10.1",
         "react-dom": "^19.0.0",
@@ -771,7 +771,7 @@
 
     "next-themes": ["next-themes@0.4.4", "", { "peerDependencies": { "react": "^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc", "react-dom": "^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc" } }, "sha512-LDQ2qIOJF0VnuVrrMSMLrWGjRMkq+0mpgl6e0juCLqdJ+oo8Q84JRWT6Wh11VDQKkMMe+dVzDKLWs5n87T+PkQ=="],
 
-    "obd-raw-data-parser": ["obd-raw-data-parser@1.0.8", "", { "dependencies": { "text-decoding": "^1.0.0" } }, "sha512-uu05kk6kcH+TQMlLLJwzwWBeSJM+WoK74Ob/FB60jRYsqctG+z1sMJ7SluTnqw7fMotHQQS5pcHEmYmS7Lx1nA=="],
+    "obd-raw-data-parser": ["obd-raw-data-parser@github:rakshitbharat/obd-raw-data-parser#b5c08e3", { "dependencies": { "text-decoding": "^1.0.0" } }, "rakshitbharat-obd-raw-data-parser-b5c08e3"],
 
     "object-assign": ["object-assign@4.1.1", "", {}, "sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg=="],
 

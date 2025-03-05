@@ -5,30 +5,77 @@ import { testParser } from '@/lib/obd-parser';
 export async function GET() {
     return NextResponse.json({
         status: 'success',
-        message: 'OBD-II Parser API',
-        endpoints: {
-            'POST /api/obd': {
-                description: 'Parse OBD-II data or get PID information',
-                body: {
-                    action: {
-                        type: 'string',
-                        enum: ['parseOBD', 'getPIDInfo', 'processVIN', 'validateVIN', 'isVinData']
+        data: {
+            apiVersion: '1.0',
+            description: 'OBD-II Data Parser API',
+            endpoints: {
+                'POST /api/obd': {
+                    description: 'Parse OBD-II data or get PID information',
+                    body: {
+                        action: {
+                            type: 'string',
+                            enum: ['parseOBD', 'getPIDInfo', 'processVIN', 'validateVIN', 'isVinData'],
+                            required: true
+                        },
+                        data: {
+                            type: 'string',
+                            description: 'The data to process',
+                            required: true
+                        }
                     },
-                    data: {
-                        type: 'string',
-                        description: 'The data to process'
-                    }
-                },
-                examples: [
-                    {
-                        action: 'parseOBD',
-                        data: '41 0D 32'
-                    },
-                    {
-                        action: 'getPIDInfo',
-                        data: '0C'
-                    }
-                ]
+                    examples: [
+                        {
+                            description: 'Parse vehicle speed (50 km/h)',
+                            request: {
+                                action: 'parseOBD',
+                                data: '41 0D 32'
+                            },
+                            response: {
+                                status: 'success',
+                                data: {
+                                    mode: '41',
+                                    pid: '0D',
+                                    name: 'vss',
+                                    unit: 'km/h',
+                                    value: 50
+                                }
+                            }
+                        },
+                        {
+                            description: 'Get PID information for RPM',
+                            request: {
+                                action: 'getPIDInfo',
+                                data: '0C'
+                            },
+                            response: {
+                                status: 'success',
+                                data: {
+                                    mode: '01',
+                                    pid: '0C',
+                                    name: 'rpm',
+                                    description: 'Engine RPM',
+                                    min: 0,
+                                    max: 16383.75,
+                                    unit: 'rev/min',
+                                    bytes: 2
+                                }
+                            }
+                        },
+                        {
+                            description: 'Process VIN data',
+                            request: {
+                                action: 'processVIN',
+                                data: '014\r0:49020157304C\r1:4A443745433247\r2:42353839323737'
+                            },
+                            response: {
+                                status: 'success',
+                                data: {
+                                    vin: 'W0LJD7EC2GB589277'
+                                }
+                            }
+                        }
+                    ]
+                }
             }
         }
     }, {
