@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { parseOBDResponse, getPIDInfo, VinDecoder } from 'obd-raw-data-parser';
 
 // Handle OPTIONS request for CORS preflight
-export async function OPTIONS(request: Request) {
+export async function OPTIONS() {
     return new NextResponse(null, {
         status: 200,
         headers: {
@@ -80,7 +80,8 @@ export async function POST(request: Request) {
         
         return response;
 
-    } catch (error) {
+    } catch (err) {
+        console.error('Error:', err);
         const errorResponse = NextResponse.json(
             { error: 'Internal server error' }, 
             { status: 500 }

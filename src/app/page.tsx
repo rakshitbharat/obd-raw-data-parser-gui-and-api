@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import type { ApiResponse } from "@/lib/types";
 
 export default function Home() {
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (action: string, data: string) => {
@@ -50,7 +51,7 @@ export default function Home() {
             <Card>
               <CardHeader>
                 <CardTitle>Parse OBD Response</CardTitle>
-                <CardDescription>Enter raw OBD data to parse (e.g., "41 0D 32" for vehicle speed)</CardDescription>
+                <CardDescription>Enter raw OBD data to parse (e.g., &ldquo;41 0D 32&rdquo; for vehicle speed)</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={(e) => {
@@ -73,7 +74,7 @@ export default function Home() {
             <Card>
               <CardHeader>
                 <CardTitle>Get PID Information</CardTitle>
-                <CardDescription>Enter a PID to get its information (e.g., "0C" for RPM)</CardDescription>
+                <CardDescription>Enter a PID to get its information (e.g., &ldquo;0C&rdquo; for RPM)</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={(e) => {
@@ -142,7 +143,7 @@ export default function Home() {
             <Card>
               <CardHeader>
                 <CardTitle>Check VIN Data</CardTitle>
-                <CardDescription>Check if the data is VIN-related (e.g., "0902" or "490201")</CardDescription>
+                <CardDescription>Check if the data is VIN-related (e.g., &ldquo;0902&rdquo; or &ldquo;490201&rdquo;)</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={(e) => {
