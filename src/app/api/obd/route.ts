@@ -1,5 +1,49 @@
 import { NextResponse } from 'next/server';
-import { parseOBDResponse, getPIDInfo, VinDecoder } from 'obd-raw-data-parser';
+import { parseOBDResponse, getPIDInfo, VinDecoder, DTCBaseDecoder } from 'obd-raw-data-parser';
+
+// Create DTC decoders for different modes with isCan: true
+const mode03Decoder = new DTCBaseDecoder({
+    logPrefix: "MODE03",
+    isCan: true,
+    serviceMode: "03",
+    troubleCodeType: "CURRENT",
+});
+
+const mode07Decoder = new DTCBaseDecoder({
+    logPrefix: "MODE07",
+    isCan: true,
+    serviceMode: "07",
+    troubleCodeType: "PENDING",
+});
+
+const mode0ADecoder = new DTCBaseDecoder({
+    logPrefix: "MODE0A",
+    isCan: true,
+    serviceMode: "0A",
+    troubleCodeType: "PERMANENT",
+});
+
+// Create DTC decoders for different modes with isCan: false
+const mode03DecoderNonCan = new DTCBaseDecoder({
+    logPrefix: "MODE03-NONCAN",
+    isCan: false,
+    serviceMode: "03",
+    troubleCodeType: "CURRENT",
+});
+
+const mode07DecoderNonCan = new DTCBaseDecoder({
+    logPrefix: "MODE07-NONCAN",
+    isCan: false,
+    serviceMode: "07",
+    troubleCodeType: "PENDING",
+});
+
+const mode0ADecoderNonCan = new DTCBaseDecoder({
+    logPrefix: "MODE0A-NONCAN",
+    isCan: false,
+    serviceMode: "0A",
+    troubleCodeType: "PERMANENT",
+});
 
 // Handle GET requests
 export async function GET() {
@@ -14,13 +58,24 @@ export async function GET() {
                     body: {
                         action: {
                             type: 'string',
-                            enum: ['parseOBD', 'getPIDInfo', 'processVIN', 'validateVIN', 'isVinData'],
+                            enum: ['parseOBD', 'getPIDInfo', 'processVIN', 'validateVIN', 'isVinData', 'decodeDTC'],
                             required: true
                         },
                         data: {
                             type: 'string',
                             description: 'The data to process',
                             required: true
+                        },
+                        mode: {
+                            type: 'string',
+                            enum: ['03', '07', '0A'],
+                            description: 'DTC mode (required for decodeDTC action)',
+                            required: false
+                        },
+                        isCan: {
+                            type: 'boolean',
+                            description: 'Whether to use CAN or non-CAN decoder (required for decodeDTC action)',
+                            required: false
                         }
                     },
                     examples: [
@@ -110,7 +165,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { action, data } = body;
+        const { action, data, mode, isCan = true } = body;
 
         if (!action) {
             return NextResponse.json({ 
@@ -122,6 +177,64 @@ export async function POST(request: Request) {
         // Create response object to add CORS headers
         const response = (() => {
             switch (action) {
+                case 'decodeDTC':
+                    if (!mode) {
+                        return NextResponse.json({ 
+                            status: 'error',
+                            error: 'Mode is required for DTC decoding' 
+                        }, { status: 400 });
+                    }
+                    let decoder;
+                    if (isCan) {
+                        switch (mode) {
+                            case '03':
+                                decoder = mode03Decoder;
+                                break;
+                            case '07':
+                                decoder = mode07Decoder;
+                                break;
+                            case '0A':
+                                decoder = mode0ADecoder;
+                                break;
+                            default:
+                                return NextResponse.json({ 
+                                    status: 'error',
+                                    error: 'Invalid DTC mode' 
+                                }, { status: 400 });
+                        }
+                    } else {
+                        switch (mode) {
+                            case '03':
+                                decoder = mode03DecoderNonCan;
+                                break;
+                            case '07':
+                                decoder = mode07DecoderNonCan;
+                                break;
+                            case '0A':
+                                decoder = mode0ADecoderNonCan;
+                                break;
+                            default:
+                                return NextResponse.json({ 
+                                    status: 'error',
+                                    error: 'Invalid DTC mode' 
+                                }, { status: 400 });
+                        }
+                    }
+                    // Parse the input data as array of arrays of numbers
+                    let dtcData;
+                    try {
+                        dtcData = JSON.parse(data);
+                    } catch (e) {
+                        return NextResponse.json({ 
+                            status: 'error',
+                            error: 'Invalid DTC data format. Expected JSON array of arrays of numbers.' 
+                        }, { status: 400 });
+                    }
+                    return NextResponse.json({
+                        status: 'success',
+                        data: decoder.decodeDTCs(dtcData)
+                    });
+
                 case 'parseOBD':
                     return NextResponse.json({
                         status: 'success',

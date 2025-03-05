@@ -14,7 +14,7 @@ export default function Home() {
   const [results, setResults] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (action: string, data: string) => {
+  const handleSubmit = async (action: string, data: string, mode?: string, isCan?: boolean) => {
     try {
       setLoading(true);
       const response = await fetch('/api/obd', {
@@ -22,7 +22,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ action, data }),
+        body: JSON.stringify({ action, data, mode, isCan }),
       });
       
       const result = await response.json();
@@ -49,12 +49,13 @@ export default function Home() {
 
         <main className="max-w-4xl mx-auto space-y-8">
           <Tabs defaultValue="parseOBD" className="w-full">
-            <TabsList className="grid grid-cols-2 lg:grid-cols-5 w-full mb-8">
+            <TabsList className="grid grid-cols-2 lg:grid-cols-6 w-full mb-8">
               <TabsTrigger value="parseOBD" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Parse OBD</TabsTrigger>
               <TabsTrigger value="pidInfo" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">PID Info</TabsTrigger>
               <TabsTrigger value="processVIN" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Process VIN</TabsTrigger>
               <TabsTrigger value="validateVIN" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Validate VIN</TabsTrigger>
               <TabsTrigger value="isVinData" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Check VIN Data</TabsTrigger>
+              <TabsTrigger value="decodeDTC" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Decode DTC</TabsTrigger>
             </TabsList>
 
             <div className="grid gap-8">
@@ -197,6 +198,71 @@ export default function Home() {
                       <Button type="submit" disabled={loading} className="w-full">
                         {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
                         Check Data
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="decodeDTC">
+                <Card className="border-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-blue-500"></span>
+                      Decode Diagnostic Trouble Codes (DTC)
+                    </CardTitle>
+                    <CardDescription>Enter DTC data in array format and select the mode</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.target as HTMLFormElement;
+                      const formData = new FormData(form);
+                      const data = formData.get('data') as string;
+                      const mode = formData.get('mode') as string;
+                      const isCan = formData.get('isCan') === 'true';
+                      handleSubmit('decodeDTC', data, mode, isCan);
+                    }} className="space-y-4">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="dtc-mode">DTC Mode</Label>
+                          <select 
+                            id="dtc-mode" 
+                            name="mode" 
+                            className="w-full p-2 border rounded-md bg-background"
+                            required
+                          >
+                            <option value="03">Mode 03 - Current DTCs</option>
+                            <option value="07">Mode 07 - Pending DTCs</option>
+                            <option value="0A">Mode 0A - Permanent DTCs</option>
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="dtc-protocol">Protocol Type</Label>
+                          <select 
+                            id="dtc-protocol" 
+                            name="isCan" 
+                            className="w-full p-2 border rounded-md bg-background"
+                            required
+                          >
+                            <option value="true">CAN</option>
+                            <option value="false">Non-CAN</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="dtc-data">DTC Data (JSON array format)</Label>
+                        <textarea 
+                          id="dtc-data" 
+                          name="data" 
+                          placeholder='[[52, 51, 48, 49, 48, 49, 48, 49, 49, 51, 13], [13, 62]]'
+                          required 
+                          className="w-full h-32 p-2 font-mono border rounded-md resize-none bg-background" 
+                        />
+                      </div>
+                      <Button type="submit" disabled={loading} className="w-full">
+                        {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+                        Decode DTCs
                       </Button>
                     </form>
                   </CardContent>
