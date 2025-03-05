@@ -1,5 +1,4 @@
 'use client';
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import type { ApiResponse } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 export default function Home() {
   const [results, setResults] = useState<ApiResponse | null>(null);
@@ -34,148 +36,210 @@ export default function Home() {
   };
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center w-full max-w-4xl">
-        <h1 className="text-3xl font-bold text-center mb-8">OBD-II Data Parser</h1>
-        
-        <Tabs defaultValue="parseOBD" className="w-full">
-          <TabsList className="grid grid-cols-5 w-full">
-            <TabsTrigger value="parseOBD">Parse OBD</TabsTrigger>
-            <TabsTrigger value="pidInfo">PID Info</TabsTrigger>
-            <TabsTrigger value="processVIN">Process VIN</TabsTrigger>
-            <TabsTrigger value="validateVIN">Validate VIN</TabsTrigger>
-            <TabsTrigger value="isVinData">Check VIN Data</TabsTrigger>
-          </TabsList>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted">
+      <div className="container mx-auto px-4 py-8">
+        <header className="text-center mb-12">
+          <h1 className="text-4xl font-bold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-500">
+            OBD-II Data Parser
+          </h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            A powerful tool for parsing and analyzing OBD-II diagnostic data, VIN processing, and PID information.
+          </p>
+        </header>
 
-          <TabsContent value="parseOBD">
-            <Card>
+        <main className="max-w-4xl mx-auto space-y-8">
+          <Tabs defaultValue="parseOBD" className="w-full">
+            <TabsList className="grid grid-cols-2 lg:grid-cols-5 w-full mb-8">
+              <TabsTrigger value="parseOBD" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Parse OBD</TabsTrigger>
+              <TabsTrigger value="pidInfo" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">PID Info</TabsTrigger>
+              <TabsTrigger value="processVIN" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Process VIN</TabsTrigger>
+              <TabsTrigger value="validateVIN" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Validate VIN</TabsTrigger>
+              <TabsTrigger value="isVinData" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Check VIN Data</TabsTrigger>
+            </TabsList>
+
+            <div className="grid gap-8">
+              <TabsContent value="parseOBD">
+                <Card className="border-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-blue-500"></span>
+                      Parse OBD Response
+                    </CardTitle>
+                    <CardDescription>Enter raw OBD data to parse (e.g., "41 0D 32" for vehicle speed)</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.target as HTMLFormElement;
+                      const data = new FormData(form).get('data') as string;
+                      handleSubmit('parseOBD', data);
+                    }} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="obd-data">OBD Data</Label>
+                        <Input id="obd-data" name="data" placeholder="41 0D 32" required className="font-mono" />
+                      </div>
+                      <Button type="submit" disabled={loading} className="w-full">
+                        {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+                        Parse Data
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="pidInfo">
+                <Card className="border-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-blue-500"></span>
+                      Get PID Information
+                    </CardTitle>
+                    <CardDescription>Enter a PID to get its information (e.g., "0C" for RPM)</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.target as HTMLFormElement;
+                      const data = new FormData(form).get('data') as string;
+                      handleSubmit('getPIDInfo', data);
+                    }} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="pid">PID</Label>
+                        <Input id="pid" name="data" placeholder="0C" required className="font-mono" />
+                      </div>
+                      <Button type="submit" disabled={loading} className="w-full">
+                        {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+                        Get Info
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="processVIN">
+                <Card className="border-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-blue-500"></span>
+                      Process VIN
+                    </CardTitle>
+                    <CardDescription>Enter VIN data in any format (segmented, hex, or byte array)</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.target as HTMLFormElement;
+                      const data = new FormData(form).get('data') as string;
+                      handleSubmit('processVIN', data);
+                    }} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="vin-data">VIN Data</Label>
+                        <Input id="vin-data" name="data" placeholder="014\r0:49020157304C\r1:4A443745433247\r2:42353839323737" required className="font-mono" />
+                      </div>
+                      <Button type="submit" disabled={loading} className="w-full">
+                        {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+                        Process VIN
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="validateVIN">
+                <Card className="border-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-blue-500"></span>
+                      Validate VIN
+                    </CardTitle>
+                    <CardDescription>Enter a VIN to validate its format</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.target as HTMLFormElement;
+                      const data = new FormData(form).get('data') as string;
+                      handleSubmit('validateVIN', data);
+                    }} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="vin">VIN</Label>
+                        <Input id="vin" name="data" placeholder="W0LJD7EC2GB589277" required className="font-mono" />
+                      </div>
+                      <Button type="submit" disabled={loading} className="w-full">
+                        {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+                        Validate VIN
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="isVinData">
+                <Card className="border-2">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <span className="size-2 rounded-full bg-blue-500"></span>
+                      Check VIN Data
+                    </CardTitle>
+                    <CardDescription>Check if the data is VIN-related (e.g., "0902" or "490201")</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.target as HTMLFormElement;
+                      const data = new FormData(form).get('data') as string;
+                      handleSubmit('isVinData', data);
+                    }} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="vin-check">Data to Check</Label>
+                        <Input id="vin-check" name="data" placeholder="0902" required className="font-mono" />
+                      </div>
+                      <Button type="submit" disabled={loading} className="w-full">
+                        {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+                        Check Data
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </div>
+          </Tabs>
+
+          {/* Results Section */}
+          {loading ? (
+            <Card className="w-full mt-8">
               <CardHeader>
-                <CardTitle>Parse OBD Response</CardTitle>
-                <CardDescription>Enter raw OBD data to parse (e.g., &ldquo;41 0D 32&rdquo; for vehicle speed)</CardDescription>
+                <CardTitle>Results</CardTitle>
               </CardHeader>
-              <CardContent>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.target as HTMLFormElement;
-                  const data = new FormData(form).get('data') as string;
-                  handleSubmit('parseOBD', data);
-                }} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="obd-data">OBD Data</Label>
-                    <Input id="obd-data" name="data" placeholder="41 0D 32" required />
-                  </div>
-                  <Button type="submit" disabled={loading}>Parse Data</Button>
-                </form>
+              <CardContent className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+                <Skeleton className="h-4 w-[300px]" />
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="pidInfo">
-            <Card>
+          ) : results ? (
+            <Card className="w-full mt-8 border-2">
               <CardHeader>
-                <CardTitle>Get PID Information</CardTitle>
-                <CardDescription>Enter a PID to get its information (e.g., &ldquo;0C&rdquo; for RPM)</CardDescription>
+                <CardTitle className="flex items-center justify-between">
+                  Results
+                  <Button variant="ghost" size="sm" onClick={() => setResults(null)}>Clear</Button>
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.target as HTMLFormElement;
-                  const data = new FormData(form).get('data') as string;
-                  handleSubmit('getPIDInfo', data);
-                }} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="pid">PID</Label>
-                    <Input id="pid" name="data" placeholder="0C" required />
-                  </div>
-                  <Button type="submit" disabled={loading}>Get Info</Button>
-                </form>
+                {results.error ? (
+                  <Alert variant="destructive">
+                    <AlertDescription>{results.error}</AlertDescription>
+                  </Alert>
+                ) : (
+                  <pre className="bg-muted/50 p-4 rounded-lg overflow-auto font-mono text-sm">
+                    {JSON.stringify(results, null, 2)}
+                  </pre>
+                )}
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="processVIN">
-            <Card>
-              <CardHeader>
-                <CardTitle>Process VIN</CardTitle>
-                <CardDescription>Enter VIN data in any format (segmented, hex, or byte array)</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.target as HTMLFormElement;
-                  const data = new FormData(form).get('data') as string;
-                  handleSubmit('processVIN', data);
-                }} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="vin-data">VIN Data</Label>
-                    <Input id="vin-data" name="data" placeholder="014\r0:49020157304C\r1:4A443745433247\r2:42353839323737" required />
-                  </div>
-                  <Button type="submit" disabled={loading}>Process VIN</Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="validateVIN">
-            <Card>
-              <CardHeader>
-                <CardTitle>Validate VIN</CardTitle>
-                <CardDescription>Enter a VIN to validate its format</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.target as HTMLFormElement;
-                  const data = new FormData(form).get('data') as string;
-                  handleSubmit('validateVIN', data);
-                }} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="vin">VIN</Label>
-                    <Input id="vin" name="data" placeholder="W0LJD7EC2GB589277" required />
-                  </div>
-                  <Button type="submit" disabled={loading}>Validate VIN</Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="isVinData">
-            <Card>
-              <CardHeader>
-                <CardTitle>Check VIN Data</CardTitle>
-                <CardDescription>Check if the data is VIN-related (e.g., &ldquo;0902&rdquo; or &ldquo;490201&rdquo;)</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.target as HTMLFormElement;
-                  const data = new FormData(form).get('data') as string;
-                  handleSubmit('isVinData', data);
-                }} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="vin-check">Data to Check</Label>
-                    <Input id="vin-check" name="data" placeholder="0902" required />
-                  </div>
-                  <Button type="submit" disabled={loading}>Check Data</Button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {results && (
-          <Card className="w-full mt-8">
-            <CardHeader>
-              <CardTitle>Results</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <pre className="bg-slate-100 p-4 rounded-lg overflow-auto">
-                {JSON.stringify(results, null, 2)}
-              </pre>
-            </CardContent>
-          </Card>
-        )}
-      </main>
+          ) : null}
+        </main>
+      </div>
     </div>
   );
 }
