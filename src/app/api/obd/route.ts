@@ -1,67 +1,96 @@
 import { NextResponse } from 'next/server';
-import { testParser } from '@/lib/obd-parser';
+import { parseOBDResponse, getPIDInfo, VinDecoder } from 'obd-raw-data-parser';
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS(request: Request) {
+    return new NextResponse(null, {
+        status: 200,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Access-Control-Max-Age': '86400'
+        },
+    });
+}
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
         const { action, data } = body;
 
-        switch (action) {
-            case 'parseOBD':
-                if (!data) {
-                    return NextResponse.json({ error: 'Data is required' }, { status: 400 });
-                }
-                const parsedData = testParser.parseOBD(data);
-                return NextResponse.json(parsedData);
-
-            case 'getPIDInfo':
-                if (!data) {
-                    return NextResponse.json({ error: 'PID is required' }, { status: 400 });
-                }
-                const pidInfo = testParser.getPIDInfo(data);
-                return NextResponse.json(pidInfo);
-
-            case 'processVIN':
-                if (!data) {
-                    return NextResponse.json({ error: 'VIN data is required' }, { status: 400 });
-                }
-                let vinResult;
-                
-                // Detect the format and process accordingly
-                if (typeof data === 'string') {
-                    if (data.includes('\r')) {
-                        // Segmented response format
-                        vinResult = testParser.VinDecoder.processVINResponse(data);
-                    } else {
-                        // Hex format
-                        vinResult = testParser.VinDecoder.processVINSegments(data);
+        // Create response object to add CORS headers
+        const response = (() => {
+            switch (action) {
+                case 'parseOBD':
+                    if (!data) {
+                        return NextResponse.json({ error: 'Data is required' }, { status: 400 });
                     }
-                } else if (Array.isArray(data)) {
-                    // Byte array format
-                    vinResult = testParser.VinDecoder.processVINByteArray(data);
-                }
-                
-                return NextResponse.json({ vin: vinResult });
+                    const parsedData = parseOBDResponse(data);
+                    return NextResponse.json(parsedData);
 
-            case 'validateVIN':
-                if (!data) {
-                    return NextResponse.json({ error: 'VIN is required' }, { status: 400 });
-                }
-                const isValid = testParser.VinDecoder.validateVIN(data);
-                return NextResponse.json({ isValid });
+                case 'getPIDInfo':
+                    if (!data) {
+                        return NextResponse.json({ error: 'PID is required' }, { status: 400 });
+                    }
+                    const pidInfo = getPIDInfo(data);
+                    return NextResponse.json(pidInfo);
 
-            case 'isVinData':
-                if (!data) {
-                    return NextResponse.json({ error: 'Data is required' }, { status: 400 });
-                }
-                const isVinData = testParser.VinDecoder.isVinData(data);
-                return NextResponse.json({ isVinData });
+                case 'processVIN':
+                    if (!data) {
+                        return NextResponse.json({ error: 'VIN data is required' }, { status: 400 });
+                    }
+                    let vinResult;
+                    
+                    if (typeof data === 'string') {
+                        if (data.includes('\r')) {
+                            vinResult = VinDecoder.processVINResponse(data);
+                        } else {
+                            vinResult = VinDecoder.processVINSegments(data);
+                        }
+                    } else if (Array.isArray(data)) {
+                        vinResult = VinDecoder.processVINByteArray(data);
+                    }
+                    
+                    return NextResponse.json({ vin: vinResult });
 
-            default:
-                return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-        }
+                case 'validateVIN':
+                    if (!data) {
+                        return NextResponse.json({ error: 'VIN is required' }, { status: 400 });
+                    }
+                    const isValid = VinDecoder.validateVIN(data);
+                    return NextResponse.json({ isValid });
+
+                case 'isVinData':
+                    if (!data) {
+                        return NextResponse.json({ error: 'Data is required' }, { status: 400 });
+                    }
+                    const isVinData = VinDecoder.isVinData(data);
+                    return NextResponse.json({ isVinData });
+
+                default:
+                    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+            }
+        })();
+
+        // Add CORS headers to the response
+        response.headers.set('Access-Control-Allow-Origin', '*');
+        response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        
+        return response;
+
     } catch (error) {
-        console.error('Error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        const errorResponse = NextResponse.json(
+            { error: 'Internal server error' }, 
+            { status: 500 }
+        );
+        
+        // Add CORS headers even to error responses
+        errorResponse.headers.set('Access-Control-Allow-Origin', '*');
+        errorResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        errorResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        
+        return errorResponse;
     }
 }
