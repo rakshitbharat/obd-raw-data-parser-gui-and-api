@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { parseOBDResponse, getPIDInfo, VinDecoder } from 'obd-raw-data-parser';
+import { testParser } from '@/lib/obd-parser';
 
 export async function POST(request: Request) {
     try {
@@ -11,14 +11,14 @@ export async function POST(request: Request) {
                 if (!data) {
                     return NextResponse.json({ error: 'Data is required' }, { status: 400 });
                 }
-                const parsedData = parseOBDResponse(data);
+                const parsedData = testParser.parseOBD(data);
                 return NextResponse.json(parsedData);
 
             case 'getPIDInfo':
                 if (!data) {
                     return NextResponse.json({ error: 'PID is required' }, { status: 400 });
                 }
-                const pidInfo = getPIDInfo(data);
+                const pidInfo = testParser.getPIDInfo(data);
                 return NextResponse.json(pidInfo);
 
             case 'processVIN':
@@ -31,14 +31,14 @@ export async function POST(request: Request) {
                 if (typeof data === 'string') {
                     if (data.includes('\r')) {
                         // Segmented response format
-                        vinResult = VinDecoder.processVINResponse(data);
+                        vinResult = testParser.VinDecoder.processVINResponse(data);
                     } else {
                         // Hex format
-                        vinResult = VinDecoder.processVINSegments(data);
+                        vinResult = testParser.VinDecoder.processVINSegments(data);
                     }
                 } else if (Array.isArray(data)) {
                     // Byte array format
-                    vinResult = VinDecoder.processVINByteArray(data);
+                    vinResult = testParser.VinDecoder.processVINByteArray(data);
                 }
                 
                 return NextResponse.json({ vin: vinResult });
@@ -47,20 +47,21 @@ export async function POST(request: Request) {
                 if (!data) {
                     return NextResponse.json({ error: 'VIN is required' }, { status: 400 });
                 }
-                const isValid = VinDecoder.validateVIN(data);
+                const isValid = testParser.VinDecoder.validateVIN(data);
                 return NextResponse.json({ isValid });
 
             case 'isVinData':
                 if (!data) {
                     return NextResponse.json({ error: 'Data is required' }, { status: 400 });
                 }
-                const isVinData = VinDecoder.isVinData(data);
+                const isVinData = testParser.VinDecoder.isVinData(data);
                 return NextResponse.json({ isVinData });
 
             default:
                 return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
         }
     } catch (error) {
+        console.error('Error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
