@@ -30,9 +30,6 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-background font-sans`}>
         <div className="relative flex min-h-screen flex-col">
           {children}
-          <footer className="mt-auto py-6 text-center text-sm text-muted-foreground">
-            <p>Built with Next.js and Shadcn UI</p>
-          </footer>
         </div>
       </body>
     </html>
