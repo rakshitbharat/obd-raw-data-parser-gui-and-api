@@ -790,7 +790,7 @@
 
     "normalize-range": ["normalize-range@0.1.2", "", {}, "sha512-bdok/XvKII3nUpklnV6P2hxtMNrCboOjAcyBuQnWEhO665FwrSNRxU+AqpsyvO6LgGYPspN+lu5CLtw4jPRKNA=="],
 
-    "obd-raw-data-parser": ["obd-raw-data-parser@1.0.13", "", { "dependencies": { "text-decoding": "^1.0.0" } }, "sha512-QZbDUujoCFL31g/niUM4Qk8hrGG58Y0hVgu7ymIsBlwHO5D6b7MYAM5Vol91TVrckN8i+1+8mlInll3Jh1+Cog=="],
+    "obd-raw-data-parser": ["obd-raw-data-parser@1.0.14", "", { "dependencies": { "text-decoding": "^1.0.0" } }, "sha512-yZcQVa91SeeJ30imAcNILoqRRw779EtCPEA0Q7I3I4w/gDb4lvKx+uL774DBPS227EVZ4DvJO+STL1d64ATCtg=="],
 
     "object-assign": ["object-assign@4.1.1", "", {}, "sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg=="],
 
