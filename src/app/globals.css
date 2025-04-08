@@ -142,5 +142,116 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image: radial-gradient(circle at center, var(--primary)/5% 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
+
+@layer utilities {
+  .bg-dot-pattern {
+    background-color: var(--background);
+    background-image: radial-gradient(var(--primary)/5% 0.5px, transparent 0.5px);
+    background-size: 16px 16px;
+    background-position: 0 0;
+  }
+
+  .gradient-border {
+    position: relative;
+    border: none;
+    background: var(--background);
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(45deg, 
+      var(--primary)/30%,
+      var(--accent)/30%,
+      var(--primary)/30%
+    );
+    -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  .card-hover {
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px -15px var(--primary)/10%;
+  }
+
+  .input-effect {
+    transition: border-color 0.2s ease;
+  }
+  
+  .input-effect:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--background),
+                0 0 0 4px var(--primary);
+  }
+
+  .tab-transition {
+    transition: all 0.2s ease;
+  }
+
+  .tab-transition:hover {
+    background: var(--primary)/10%;
+  }
+
+  .button-glow {
+    position: relative;
+  }
+
+  .button-glow::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, var(--primary), var(--accent));
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .button-glow:hover::after {
+    opacity: 0.5;
+  }
+
+  .results-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Improve form control interactivity */
+  select, input, textarea, button {
+    cursor: pointer;
+    position: relative;
+    z-index: 20;
+  }
+
+  select:hover, input:hover, textarea:hover {
+    border-color: var(--primary)/50%;
   }
 }
